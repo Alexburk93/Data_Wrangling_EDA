@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(readxl)
 library(dplyr)
 # Load data set from github
-suicide_df = read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/raw_data/death-rate-from-suicides-gho%20new.csv")
+suicide_df = read_csv("/home/alex/Uni/Master_US/2_Semester/Class_Data_Wrangeling_EDA/Data_Wrangling_EDA/data/raw_data/death-rate-from-suicides-gho new.csv")
 ```
 ```{r}
 suicide_df$`Age-standardized suicide rate - Sex: both sexes` = as.double(suicide_df$`Age-standardized suicide rate - Sex: both sexes`)
@@ -45,7 +45,7 @@ ggplot(avg_country, aes(x = avg_per_country)) +
   theme_minimal()
 ```
 ```{r}
-happiness_df = read_excel("/home/alex/Uni/Master_US/2_Semester/Data_Wrangeling_EDA/Data_Wrangling_EDA/data/raw_data/WHR20_DataForTable2.1.xls")
+happiness_df = read_excel("/home/alex/Uni/Master_US/2_Semester/Class_Data_Wrangeling_EDA/Data_Wrangling_EDA/data/raw_data/WHR20_DataForTable2.1.xls")
 happiness_df
 ```
 ```{r}

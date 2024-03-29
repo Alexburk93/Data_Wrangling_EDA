@@ -1,0 +1,231 @@
+---
+title: "Data Wrangling Project"
+author: "Marckenrold Cadet"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Suicide is the act of intentionally casuing one's death. Mental disorders--including depression, bipolar disorder, autism, schizophrenia, personality disorders, anxiety, physical disorders such as chronic fatigue syndrome, and substance abuse--including alcoholism and the use of and withdrawal from benzodiazepines--are risk factors. Some suicide are impulsive acts due to stress (such as from financial or academic difficulties), relationship problems (such as breakups or deaths of close ones), or harassment/bullying. Those who have previously attempted suicide are **failure** how do you fail to kill yourself **no wonder why you are suicidal, can't even kill yourself--damn shame.** _jk continue..._ are at higher risk for future attempts. Effective suicide prevention efforts include limiting access to methods of suicide--such as firearms, drugs, and poisons; treating mental disorders and substance misuse; careful media reporting about suicide; and improving economic conditions. Even though crisis hotlines are common, they have not been well studied.
+
+
+## Explaratory Data Analysis of Suicide Rate
+
+```{r}
+# Load libraries
+library(dplyr)
+library(readr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
+library(stringr)
+```
+
+
+```{r}
+
+# Load dataset
+bankruptcies <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/raw_data/Bankruptcies_2011-2020.csv")
+
+# Display structure of dataset
+str(bankruptcies)
+
+# Show the first few rows 
+head(bankruptcies)
+
+# Summary statistics of numerical attributes
+summary(bankruptcies)
+
+# Summary statistics of categorical attribute
+table(bankruptcies$Country)
+
+# Check for missing values
+sum(is.na(bankruptcies))
+
+# Removing NA's columns and Time (Duplicate)  
+data <- select(bankruptcies, -`Flag Codes`, -Flags, -`Reference Period Code`, -`Reference Period`, -TIME)
+data %>% 
+  sample_n(10)
+
+# Display the structure of the modified dataset
+str(data)
+
+# Check the dimension of data
+dim(data)
+
+```
+
+For this project, we are only focusing on information from 2011 to 2020. And to minimize the workload, we are analyzing 19 countries. 
+```{r}
+# Create new columns 'Quarter' and 'Year' from 'Time'
+new_data <- mutate(data,
+                   Quarter = str_sub(Time, 1, 2), # Extract Quarter
+                   Year = as.numeric(str_sub(Time, 4))) # Extract Year and convert to numeric
+
+# remove the original 'Time' column
+new_data <- select(new_data, -Time)  
+new_data
+
+# Get date range
+date_range <- range(new_data$Year)
+
+# Count unique countries
+n_countries <- length(unique(new_data$Country))
+
+# Print the results
+n_countries
+date_range
+
+# Only need data from 2011-2020, excluding 2021
+bankruptcy_data <- filter(new_data, Year != 2021)
+new_data
+
+# Get date range of new updated dataset
+date_range <- range(bankruptcy_data$Year)
+
+# Extract start and end years from the range
+start_year <- date_range[1]
+end_year <- date_range[2]
+
+# Count unique countries
+n_countries <- length(unique(bankruptcy_data$Country))
+
+# Print the results
+cat("Number of country: ", n_countries, "\n") 
+cat("Date range from: ", start_year, " to ", end_year, "\n")
+```
+
+Exploring GDP dataset & analyze foundings
+```{r}
+# Load dataset 
+my_data <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/raw_data/GDP_Data/GPD_1960_2022.csv")
+my_data
+```
+
+The Years are in the header, using `pivot_longer()` to convert into two column Year and GDP
+```{r}
+# Pivot the data from wide to long format
+joy <- pivot_longer(my_data, 
+                         cols = -c(`Country Name`, `Country Code`, `Indicator Name`, `Indicator Code`),
+                         names_to = "Year", 
+                         values_to = "GDP")
+
+# Show the first few rows
+head(joy)
+```
+
+Perfom `summary stastics`, check for `NA's`, dimension `dim()`, etc. 
+```{r}
+# Display structure of dataset
+str(joy)
+
+# Show the first few rows 
+head(joy)
+
+# Summary statistics of numerical attributes
+summary(joy)
+
+# Summary statistics of categorical attribute
+table(joy$`Indicator Code`)
+
+# Check for missing values
+sum(is.na(joy))
+
+# Check the dimension of data
+dim(joy)
+```
+
+Filter the data to only show the 19 countries and the date range the project is focused on.
+
+```{r}
+# Define the list of 19 countries
+countries_of_interest <- c("Australia", "Belgium", "Brazil", "Canada", "Denmark",
+                           "Finland", "France", "Germany", "Iceland", "Italy",
+                           "Japan", "Netherlands", "New Zealand", "Norway", 
+                           "South Africa", "Spain", "Sweden", "United Kingdom", 
+                           "United States")
+
+# Filter the data for the 19 countries
+gdp <- joy %>%
+  filter(`Country Name` %in% countries_of_interest)
+
+# Define the date range of focus
+start_year <- 2011
+end_year <- 2020
+
+# Filter the data for the date range
+gdp <- gdp %>%
+  filter(as.numeric(Year) >= start_year & as.numeric(Year) <= end_year)
+
+# Show the filtered data
+gdp %>% 
+  sample_n(10)
+```
+
+```{r}
+# Display structure of dataset
+str(gdp)
+
+# Convert Year to numeric 
+# gdp$Year <- as.numeric(gdp$Year)
+
+# Show the first few rows 
+head(gdp)
+
+# Summary statistics of numerical attributes
+summary(gdp)
+
+# Summary statistics of categorical attribute
+table(gdp$`Indicator Code`)
+
+# Check for missing values
+sum(is.na(gdp))
+
+# Check the dimension of data
+dim(gdp)
+```
+
+```{r}
+# Group the filtered data by Year and calculate the mean GDP for each year
+mean_gdp_by_year <- gdp %>%
+  group_by(Year) %>%
+  summarize(mean_GDP = mean(GDP, na.rm = TRUE))
+
+# Show the mean GDP for each year
+print(mean_gdp_by_year)
+```
+Visualization for top 10 highest GDP by Counries Over Time.
+
+```{r}
+# Filter to include only the top 10 countries with the highest GDP values
+top_10_gdp <- gdp %>%
+  group_by(`Country Name`) %>%
+  summarize(total_gdp = sum(GDP, na.rm = TRUE)) %>%
+  top_n(10, total_gdp) %>%
+  left_join(gdp, by = "Country Name")
+
+# Convert GDP values to millions or billions
+top_10_gdp <- top_10_gdp %>%
+  mutate(GDP_formatted = case_when(
+    GDP >= 1e12 ~ paste0(round(GDP / 1e12, 1), "T"),  # Convert to trillions
+    GDP >= 1e9 ~ paste0(round(GDP / 1e9, 1), "B"),  # Convert to billions
+    GDP >= 1e6 ~ paste0(round(GDP / 1e6, 1), "M"),   # Convert to millions
+    TRUE ~ as.character(GDP)                        # Keep unchanged if less than 1 million
+  ))
+
+# Create a line plot of GDP over time with formatted values for the top 10 countries
+ggplot(top_10_gdp, aes(x = Year, y = GDP, group = `Country Name`)) +
+  geom_line(aes(color = `Country Name`)) +
+  labs(title = "GDP Trends Over Time (Top 10 Countries)",
+       x = "Year",
+       y = "GDP",
+       color = "Country") +
+  scale_y_continuous(labels = function(x) paste0(x, "")) +  # Ensure y-axis labels are character type
+  theme_minimal()
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
