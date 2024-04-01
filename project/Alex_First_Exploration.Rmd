@@ -1,0 +1,81 @@
+---
+title: "Alex_Exploration"
+author: "Alexander Burkhart"
+date: "2024-03-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readxl)
+library(dplyr)
+# Load data set from github
+suicide_df = read_csv("/home/alex/Uni/Master_US/2_Semester/Class_Data_Wrangeling_EDA/Data_Wrangling_EDA/data/raw_data/death-rate-from-suicides-gho new.csv")
+```
+```{r}
+suicide_df$`Age-standardized suicide rate - Sex: both sexes` = as.double(suicide_df$`Age-standardized suicide rate - Sex: both sexes`)
+summary(suicide_df)
+
+
+# Consider removing Lesotho from the analysis 
+suicide_df %>% 
+  filter(is.na(`Age-standardized suicide rate - Sex: both sexes`))
+```
+
+```{r}
+# Remove the Region / Income classes
+suicide_df_countries = suicide_df %>% 
+  filter(Code != "0", Code != "LSO")
+```
+
+```{r}
+avg_country = suicide_df_countries %>% 
+  group_by(Entity) %>% 
+  summarise(avg_per_country = mean(`Age-standardized suicide rate - Sex: both sexes`)) %>% 
+  arrange(desc(avg_per_country))
+``` 
+
+```{r}
+ggplot(avg_country, aes(x = avg_per_country)) +
+  geom_histogram() +
+  labs(x = "Mean Suicide rate", y = "Frequency", title = "Distribution of mean of suicide rate") +
+  theme_minimal()
+```
+```{r}
+happiness_df = read_excel("/home/alex/Uni/Master_US/2_Semester/Class_Data_Wrangeling_EDA/Data_Wrangling_EDA/data/raw_data/WHR20_DataForTable2.1.xls")
+happiness_df
+```
+```{r}
+summary(happiness_df)
+```
+```{r}
+# create data frame with selected columns
+happiness_df_filtered = happiness_df %>% 
+  select(`Country name`, `year` , `Life Ladder`, `Social support`, `Healthy life expectancy at birth`, `Freedom to make life choices`, `Perceptions of corruption`)
+```
+
+```{r}
+avg_happiness_per_country = happiness_df_filtered %>% 
+  group_by(`Country name`) %>% 
+  summarise(avg_happiness = mean(`Life Ladder`)) %>% 
+  arrange(desc(avg_happiness))
+```
+
+```{r}
+ggplot(avg_happiness_per_country, aes(x = avg_happiness)) +
+  geom_histogram() +
+  labs(x = "Mean Happiness Level", y = "Frequency", title = "Distribution of mean of happiness rate") +
+  theme_minimal()
+```
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,348 @@
+---
+title: "HW 5 - DW and EDA (project progress 01)"
+author: "Alexander Burkhart, Marckenrold Cadet"
+date: "2024-03-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Suicide is the act of intentionally causing one's death. Mental disorders--including depression, bipolar disorder, autism, schizophrenia, personality disorders, anxiety, physical disorders such as chronic fatigue syndrome, and substance abuse--including alcoholism and the use of and withdrawal from benzodiazepines--are risk factors. Some suicide are impulsive acts due to stress (such as from financial or academic difficulties), relationship problems (such as breakups or deaths of close ones), or harassment/bullying. Those who have previously attempted suicide are **failure** how do you fail to kill yourself **no wonder why you are suicidal, can't even kill yourself--damn shame.** _jk continue..._ are at higher risk for future attempts. Effective suicide prevention efforts include limiting access to methods of suicide--such as firearms, drugs, and poisons; treating mental disorders and substance misuse; careful media reporting about suicide; and improving economic conditions. Even though crisis hotlines are common, they have not been well studied.
+
+
+## Dataset Description
+```{r}
+# Load libraries
+library(dplyr)
+library(readr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
+library(stringr)
+library(readxl)
+library(httr)
+```
+
+### Exploration of the Bankruptcies Dataset
+```{r}
+
+# Load dataset
+bankruptcies <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/raw_data/Bankruptcies_2011-2020.csv")
+
+# Display structure of dataset
+str(bankruptcies)
+
+# Show the first few rows 
+head(bankruptcies)
+
+# Summary statistics of numerical attributes
+summary(bankruptcies)
+
+# Summary statistics of categorical attribute
+table(bankruptcies$Country)
+
+# Check for missing values
+sum(is.na(bankruptcies))
+
+# Removing NA's columns and Time (Duplicate)  
+data <- select(bankruptcies, -`Flag Codes`, -Flags, -`Reference Period Code`, -`Reference Period`, -TIME)
+data %>% 
+  sample_n(10)
+
+# Display the structure of the modified dataset
+str(data)
+
+# Check the dimension of data
+dim(data)
+
+```
+
+For this project, we are only focusing on information from 2011 to 2020. And to minimize the workload, we are analyzing 19 countries. 
+```{r}
+# Create new columns 'Quarter' and 'Year' from 'Time'
+new_data <- mutate(data,
+                   Quarter = str_sub(Time, 1, 2), # Extract Quarter
+                   Year = as.numeric(str_sub(Time, 4))) # Extract Year and convert to numeric
+
+# remove the original 'Time' column
+new_data <- select(new_data, -Time)  
+new_data
+
+# Get date range
+date_range <- range(new_data$Year)
+
+# Count unique countries
+n_countries <- length(unique(new_data$Country))
+
+# Print the results
+n_countries
+date_range
+
+# Only need data from 2011-2020, excluding 2021
+bankruptcy_data <- filter(new_data, Year != 2021)
+new_data
+
+# Get date range of new updated dataset
+date_range <- range(bankruptcy_data$Year)
+
+# Extract start and end years from the range
+start_year <- date_range[1]
+end_year <- date_range[2]
+
+# Count unique countries
+n_countries <- length(unique(bankruptcy_data$Country))
+
+# Print the results
+cat("Number of country: ", n_countries, "\n") 
+cat("Date range from: ", start_year, " to ", end_year, "\n")
+```
+
+### Exploring GDP dataset & analyze foundings
+```{r}
+# Load dataset 
+my_data <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/raw_data/GDP_Data/GPD_1960_2022.csv")
+my_data
+```
+
+The Years are in the header, using `pivot_longer()` to convert into two column Year and GDP
+```{r}
+# Pivot the data from wide to long format
+joy <- pivot_longer(my_data, 
+                         cols = -c(`Country Name`, `Country Code`, `Indicator Name`, `Indicator Code`),
+                         names_to = "Year", 
+                         values_to = "GDP")
+
+# Show the first few rows
+head(joy)
+```
+
+Perfom `summary stastics`, check for `NA's`, dimension `dim()`, etc. 
+```{r}
+# Display structure of dataset
+str(joy)
+
+# Show the first few rows 
+head(joy)
+
+# Summary statistics of numerical attributes
+summary(joy)
+
+# Summary statistics of categorical attribute
+table(joy$`Indicator Code`)
+
+# Check for missing values
+sum(is.na(joy))
+
+# Check the dimension of data
+dim(joy)
+```
+
+Filter the data to only show the 19 countries and the date range the project is focused on.
+
+```{r}
+# Define the list of 19 countries
+countries_of_interest <- c("Australia", "Belgium", "Brazil", "Canada", "Denmark",
+                           "Finland", "France", "Germany", "Iceland", "Italy",
+                           "Japan", "Netherlands", "New Zealand", "Norway", 
+                           "South Africa", "Spain", "Sweden", "United Kingdom", 
+                           "United States")
+
+# Filter the data for the 19 countries
+gdp <- joy %>%
+  filter(`Country Name` %in% countries_of_interest)
+
+# Define the date range of focus
+start_year <- 2011
+end_year <- 2020
+
+# Filter the data for the date range
+gdp <- gdp %>%
+  filter(as.numeric(Year) >= start_year & as.numeric(Year) <= end_year)
+
+# Show the filtered data
+gdp %>% 
+  sample_n(10)
+```
+
+```{r}
+# Display structure of dataset
+str(gdp)
+
+# Convert Year to numeric 
+# gdp$Year <- as.numeric(gdp$Year)
+
+# Show the first few rows 
+head(gdp)
+
+# Summary statistics of numerical attributes
+summary(gdp)
+
+# Summary statistics of categorical attribute
+table(gdp$`Indicator Code`)
+
+# Check for missing values
+sum(is.na(gdp))
+
+# Check the dimension of data
+dim(gdp)
+```
+
+```{r}
+# Group the filtered data by Year and calculate the mean GDP for each year
+mean_gdp_by_year <- gdp %>%
+  group_by(Year) %>%
+  summarize(mean_GDP = mean(GDP, na.rm = TRUE))
+
+# Show the mean GDP for each year
+print(mean_gdp_by_year)
+```
+Visualization for top 10 highest GDP by Counries Over Time.
+
+```{r}
+# Filter to include only the top 10 countries with the highest GDP values
+top_10_gdp <- gdp %>%
+  group_by(`Country Name`) %>%
+  summarize(total_gdp = sum(GDP, na.rm = TRUE)) %>%
+  top_n(10, total_gdp) %>%
+  left_join(gdp, by = "Country Name")
+
+# Convert GDP values to millions or billions
+top_10_gdp <- top_10_gdp %>%
+  mutate(GDP_formatted = case_when(
+    GDP >= 1e12 ~ paste0(round(GDP / 1e12, 1), "T"),  # Convert to trillions
+    GDP >= 1e9 ~ paste0(round(GDP / 1e9, 1), "B"),  # Convert to billions
+    GDP >= 1e6 ~ paste0(round(GDP / 1e6, 1), "M"),   # Convert to millions
+    TRUE ~ as.character(GDP)                        # Keep unchanged if less than 1 million
+  ))
+
+# Create a line plot of GDP over time with formatted values for the top 10 countries
+ggplot(top_10_gdp, aes(x = Year, y = GDP, group = `Country Name`)) +
+  geom_line(aes(color = `Country Name`)) +
+  labs(title = "GDP Trends Over Time (Top 10 Countries)",
+       x = "Year",
+       y = "GDP",
+       color = "Country") +
+  scale_y_continuous(labels = function(x) paste0(x, "")) +  # Ensure y-axis labels are character type
+  theme_minimal()
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+### Exploration of the Suicide Rate Dataset
+```{r}
+# Load data set from github
+suicide_df = read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/raw_data/death-rate-from-suicides-gho%20new.csv")
+```
+```{r}
+suicide_df$`Age-standardized suicide rate - Sex: both sexes` = as.double(suicide_df$`Age-standardized suicide rate - Sex: both sexes`)
+summary(suicide_df)
+
+
+# Consider removing Lesotho from the analysis 
+suicide_df %>% 
+  filter(is.na(`Age-standardized suicide rate - Sex: both sexes`))
+```
+
+```{r}
+# Remove the Region / Income classes and Lesotho
+suicide_df_countries = suicide_df %>% 
+  filter(Code != "0", Code != "LSO")
+```
+
+```{r}
+avg_country = suicide_df_countries %>% 
+  group_by(Entity) %>% 
+  summarise(avg_per_country = mean(`Age-standardized suicide rate - Sex: both sexes`)) %>% 
+  arrange(desc(avg_per_country))
+``` 
+
+```{r}
+ggplot(avg_country, aes(x = avg_per_country)) +
+  geom_histogram() +
+  labs(x = "Mean Suicide rate", y = "Frequency", title = "Distribution of mean of suicide rate") +
+  theme_minimal()
+```
+
+### Exploration of the Happiness Dataset
+
+```{r}
+# Use the raw file URL
+url <- "https://github.com/Alexburk93/Data_Wrangling_EDA/raw/main/data/raw_data/WHR20_DataForTable2.1.xls"
+response <- GET(url)
+content <- content(response, "raw")
+temp <- tempfile(fileext = ".xls")
+writeBin(content, temp)
+happiness_df <- read_excel(temp)
+
+# View the data
+head(happiness_df)
+
+```
+```{r}
+# create data frame with selected columns. Based on the description of the different variables.
+happiness_df_filtered = happiness_df %>% 
+  select(`Country name`, `year` , `Life Ladder`, `Social support`, `Healthy life expectancy at birth`, `Freedom to make life choices`, `Perceptions of corruption`)
+
+summary(happiness_df_filtered)
+```
+
+```{r}
+avg_happiness_per_country = happiness_df_filtered %>% 
+  group_by(`Country name`) %>% 
+  summarise(avg_happiness = mean(`Life Ladder`)) %>% 
+  arrange(desc(avg_happiness))
+```
+
+```{r}
+ggplot(avg_happiness_per_country, aes(x = avg_happiness)) +
+  geom_histogram() +
+  labs(x = "Mean Happiness Level", y = "Frequency", title = "Distribution of mean of happiness rate") +
+  theme_minimal()
+```
+
+
+## References
+
+**Title**: A Study for Effects of Economic Growth Rate and Unemployment Rate to Suicide Rate in Korea.
+**Author**: Jong Soon Park, June Young Lee, Soon Duck Kim
+
+"**Objectives**:
+We investigated the effects of the economic growth and unemployment rates on the suicide rate in Korea, between 1983 and 2000, using a time-series regression model. The purpose of this study was to model and test the magnitude of the rate of suicide, with the Korean unemployment rate and GDP." [1]
+"**Conclusion**: It was found that the suicide rate was closely related to the National's economic status of Korea, which is similar to the results found in studies in other countries. We expected, therefore, that this study could be used as the basis for further suicide-related studies." [1]
+
+**Title**: Ten-year evolution of suicide rates and economic indicators in large Brazilian urban centers
+**Author**: Asevedo, Elson; Ziebold, Carolina; Diniz, Elton; Gadelha, Ary; Mari, Jair
+
+"**Purpose of review**:
+This was a retrospective ecological study to examine the relationship between suicide rates and economic indicators in large Brazilian urban centers. Data on macroeconomic indicators (GDP and unemployment rates) and suicide rates of the largest Brazilian cities were collected from January 2006 to December 2015."[2]
+
+"**Summary** 
+The effect of economic indicators was heterogeneous among the centers, but, overall, the variation in suicide rates was inversely related to unemployment and did not show a significant relationship with GDP. These findings indicate a more complex link between economics and suicide whenever looking at local regional indicators. Further research should focus on possible intervening factors, what may inform better preventive interventions" [2]
+
+**Title**: The association between nation-level social and economic indices and suicide rates: A pilot study
+**Author**: Ravi Philip Rajkumar
+
+**Introduction**
+"Suicide is one of the leading causes of premature mortality worldwide. An analysis of global suicide data for the period 1990–2016, covering 195 countries, found that suicide was among the ten leading causes of years of life lost in Europe, the Americas and the Asia-Pacific region (Naghavi, 2019). Because of this, suicide prevention has been accorded one of the highest priorities in national and international public health plans, such as the World Health Organization's Comprehensive Mental Health Action Plan (World Health Organization, 2021a). The act of suicide is a complex behavior which results from the interaction between an innate diathesis and external stressors (van Heeringen, 2012)." [3]
+
+**Conclusions**
+"Social factors are important determinants of suicide. Despite certain limitations, the results of the current study suggest that sustainable development may play a role in the mitigation of suicide risk, Economic inequality may contribute to variations in suicide risk, particularly in men. Moreover, the strength and direction of the associations between socioeconomic factors and suicide varies across income groups, highlighting the need for an in-depth understanding of each country's social, cultural and economic profile when planning large-scale social interventions aimed at suicide prevention." [3]
+
+**Title**:Is Happiness the main cause fro the rising suicide rate in the world?
+**Author**: BONG JIN HAW, CHONG YOCK LOON, TAI HONG TING, TEOH KAH CHUN, WONG CHIN HING
+
+**Introduction**
+"This study investigates the impact of happiness on suicide rate. Beside theimpact of happiness, employment, gross domestic product, education, health expenditure and population on the suicide rate is also studied. The study divides the data into three sets including 31 developed and developing countries, 26 developed countries, and 5 developing countries. A significant relationship between happiness and the suicide rate is found in developing countries." [4]
+
+**Conclusions**
+"Surprisingly, based on the result it can be concluded that the happiness in developing countries will significantly impact and influence the suicide rate indeed. It is important to realize that the happiness is negatively affect the suicide rate in developing countries which means that increase in the happiness will subsequently lower down the suicide rate. Moreover, other economic factors such as employment, gross domestic product, government health expenditure, education and population are also included in this study to carry out their impact towards the suicide rate." [4]
+
+
+[1] https://www.jpmph.org/journal/view.php?number=50 (visited 03/24/2024)
+[2] https://journals.lww.com/co-psychiatry/abstract/2018/05000/ten_year_evolution_of_suicide_rates_and_economic.15.aspx (visited 03/22/2024)
+[3] https://www.frontiersin.org/articles/10.3389/fsoc.2023.1123284/full
+[4] http://eprints.utar.edu.my/2869/1/fyp_BF_2018_BJH_-_1403312.pdf
