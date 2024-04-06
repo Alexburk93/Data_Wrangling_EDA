@@ -248,7 +248,6 @@ suicide_df = read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangli
 suicide_df$`Age-standardized suicide rate - Sex: both sexes` = as.double(suicide_df$`Age-standardized suicide rate - Sex: both sexes`)
 summary(suicide_df)
 
-
 # Consider removing Lesotho from the analysis 
 suicide_df %>% 
   filter(is.na(`Age-standardized suicide rate - Sex: both sexes`))
@@ -309,6 +308,160 @@ ggplot(avg_happiness_per_country, aes(x = avg_happiness)) +
   geom_histogram() +
   labs(x = "Mean Happiness Level", y = "Frequency", title = "Distribution of mean of happiness rate") +
   theme_minimal()
+```
+
+### Data for Final Presentation
+
+
+Happiness Data for the 19 countries of interest from 2011 - 2019
+```{r}
+# Define the list of 19 countries
+countries_of_interest <- c("Australia", "Belgium", "Brazil", "Canada", "Denmark",
+                           "Finland", "France", "Germany", "Iceland", "Italy",
+                           "Japan", "Netherlands", "New Zealand", "Norway", 
+                           "South Africa", "Spain", "Sweden", "United Kingdom", 
+                           "United States")
+
+# Filter the data for the 19 countries
+happiness_new<- happiness_df_filtered %>%
+  filter(`Country name` %in% countries_of_interest)
+
+# Define the date range of focus
+start_year <- 2011
+end_year <- 2020
+
+# Filter the data for the date range
+happiness_data <- happiness_new %>%
+  filter(as.numeric(year) >= start_year & as.numeric(year) <= end_year)
+
+# Show the filtered data
+happiness_data %>% 
+  sample_n(10)
+```
+
+```{r}
+# Check if all countries of interest are present in the filtered data
+missing_countries <- setdiff(countries_of_interest, unique(happiness_data$`Country name`))
+
+# Print the missing countries, if any
+if(length(missing_countries) > 0) {
+  print("The following countries are missing from the filtered data:")
+  print(missing_countries)
+} else {
+  print("All countries of interest are selected from the filtered data.")
+}
+
+```
+
+```{r}
+# Count the occurrences of each country in the filtered data
+country_counts <- table(happiness_data$`Country name`)
+
+# Print the country names and their counts
+print("Country Name\t\tCount")
+for (country in names(country_counts)) {
+  cat(country, "\t\t\t", country_counts[country], "\n")
+}
+
+```
+
+Suicide Data for the 19 countries of interest from 2011 - 2019
+```{r}
+# Change column name from `Entity` to `country name`
+suicide_df <- rename(suicide_df, `Country name` = Entity)
+
+# Define the list of 19 countries
+countries_of_interest <- c("Australia", "Belgium", "Brazil", "Canada", "Denmark",
+                           "Finland", "France", "Germany", "Iceland", "Italy",
+                           "Japan", "Netherlands", "New Zealand", "Norway", 
+                           "South Africa", "Spain", "Sweden", "United Kingdom", 
+                           "United States")
+
+# Filter the data for the 19 countries
+new_suicide<- suicide_df %>%
+  filter(`Country name` %in% countries_of_interest)
+
+# Define the date range of focus
+start_year <- 2011
+end_year <- 2020
+
+# Filter the data for the date range
+suicide_data <- new_suicide %>%
+  filter(as.numeric(Year) >= start_year & as.numeric(Year) <= end_year)
+
+# Show the filtered data
+suicide_data %>% 
+  sample_n(10)
+```
+
+### Print all the data sets
+
+```{r}
+suicide_data %>% 
+  sample_n(10)
+
+happiness_data %>% 
+  sample_n(10)
+
+gdp %>% 
+  sample_n(10)
+
+bankruptcy_data %>% 
+  sample_n(10)
+```
+
+### Label headers to align all the data set & view sample data
+```{r}
+# Change column name from `Entity` to `country name`
+gdp_data <- rename(gdp, `Country name` = `Country Name`)
+bankruptcy_data<- rename(bankruptcy_data, `Country name` = `Country Name`)
+
+suicide_data %>% 
+  sample_n(10)
+
+happiness_data %>% 
+  sample_n(10)
+
+gdp_data %>% 
+  sample_n(10)
+
+bankruptcy_data %>% 
+  sample_n(10)
+```
+### Merging datasets
+```{r}
+# Convert "Year" column to character type in all datasets
+suicide_data <- mutate(suicide_data, Year = as.character(Year))
+happiness_data <- mutate(happiness_data, Year = as.character(Year))
+gdp_data <- mutate(gdp_data, Year = as.character(Year))
+bankruptcy_data <- mutate(bankruptcy_data, Year = as.character(Year))
+
+# Merge the datasets
+suicide_analysis <- suicide_data %>%
+  left_join(happiness_data, by = c("Year", "Country name")) %>%
+  left_join(gdp_data, by = c("Year", "Country name")) %>%
+  left_join(bankruptcy_data, by = c("Year", "Country name"))
+
+# View sample data from the merged dataset
+suicide_analysis %>% 
+  sample_n(10)
+```
+Save the dataset in excel csv format to run analysis for the final project
+```{r}
+
+# Drop specified columns
+suicide_analysis <- suicide_analysis %>%
+  select(-c("Country Code", "COU", "PowerCode", "PowerCode Code"))
+
+# Save the merged dataset as a CSV file
+# Define the path to the folder on your desktop
+desktop_path <- "/Users/netflixdon/Desktop/Classwork2024/DataWrangling/Data_Wrangling_EDA/data"
+
+# Create the folder if it doesn't exist
+dir.create(desktop_path, showWarnings = FALSE)
+
+# Save the merged dataset as a CSV file in the specified folder
+write.csv(suicide_analysis, file.path(desktop_path, "suicide_analysis.csv"), row.names = FALSE)
 ```
 
 
