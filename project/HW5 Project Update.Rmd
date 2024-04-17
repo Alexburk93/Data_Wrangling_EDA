@@ -413,7 +413,7 @@ bankruptcy_data %>%
 ### Label headers to align all the data set & view sample data
 ```{r}
 # Change column name from `Entity` to `country name`
-gdp_data <- rename(gdp, `Country name` = `Country Name`)
+gdp_data <- rename(gdp, `Country Name` = `Country name`)
 bankruptcy_data<- rename(bankruptcy_data, `Country name` = `Country Name`)
 
 suicide_data %>% 

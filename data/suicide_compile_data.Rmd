@@ -42,23 +42,56 @@ data <- data %>%
 data <- select(data, -Variable, -ISIC4...17, -ISIC4...18, -VAR, -MEA, -`Unit Code`)  
 data
 ```
+Open space for mark
 
-Generate a line chart of GDP overtime
+# AVG GDP over years
+## Calculation 
 ```{r}
-us_data <- data %>% 
-  filter(Country_name == "United States")
+avg_gdp_per_year <- data %>% 
+  group_by (`Year`) %>% 
+  summarise(avg_gpd = mean(`GDP`))
 
-ggplot(us_data, aes(x = Year, y = GDP)) +
-  geom_line(color = "blue") +  
-  labs(title = "GDP Over Time for the United States",
+avg_gdp_per_year
+```
+## Plot 
+```{r}
+ggplot(avg_gdp_per_year, aes(x = Year, y = avg_gpd)) +
+  geom_point(color = "blue") +  
+  labs(title = "Average GDP Over Time",
        x = "Year",
        y = "GDP") +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_gdp_per_year$Year), max(avg_gdp_per_year$Year), by = 1))
+```
+# AVG Happiness over years
+## Calculation 
+```{r}
+avg_happiness_per_year <- data %>% 
+  group_by (`Year`) %>% 
+  summarise(avg_happinnes = mean(`Life_ladder`, na.rm = T))
+
+avg_happiness_per_year
+```
+## Plot 
+
+```{r}
+ggplot(avg_gdp_per_year, aes(x = Year, y = avg_gpd)) +
+  geom_point(color = "blue") +  
+  labs(title = "Average GDP Over Time",
+       x = "Year",
+       y = "GDP") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_gdp_per_year$Year), max(avg_gdp_per_year$Year), by = 1))
 ```
 
 
-
 ```{r}
+avg_happiness_per_year <- data %>% 
+  group_by (`Country_name`) %>% 
+  summarise(avg_gpd = mean(`GDP`))
 
+avg_gdp_per_country
 ```
 
