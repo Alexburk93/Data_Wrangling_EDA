@@ -28,7 +28,7 @@ Renaming variables and drop unwanted columns
 # renaming the columns 
 data <- data %>%
   rename(`Country_name` = `Country name`,
-         `Sexes` = `Age-standardized suicide rate - Sex: both sexes`,
+         `Suicide_Rate` = `Age-standardized suicide rate - Sex: both sexes`,
          `Life_ladder` = `Life Ladder`,
          `Social_support` = `Social support`,
          `Life_expectancy` = `Healthy life expectancy at birth`,
@@ -56,7 +56,7 @@ avg_gdp_per_year
 ## Plot 
 ```{r}
 ggplot(avg_gdp_per_year, aes(x = Year, y = avg_gpd)) +
-  geom_point(color = "blue") +  
+  geom_line(color = "blue") +  
   labs(title = "Average GDP Over Time",
        x = "Year",
        y = "GDP") +
@@ -76,19 +76,46 @@ avg_happiness_per_year
 ## Plot 
 
 ```{r}
-ggplot(avg_gdp_per_year, aes(x = Year, y = avg_gpd)) +
+ggplot(avg_happiness_per_year, aes(x = Year, y = avg_happinnes)) +
   geom_point(color = "blue") +  
-  labs(title = "Average GDP Over Time",
+  labs(title = "Average Happiness Over Time",
        x = "Year",
-       y = "GDP") +
+       y = "Happiness") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_x_continuous(breaks = seq(min(avg_gdp_per_year$Year), max(avg_gdp_per_year$Year), by = 1))
+  scale_x_continuous(breaks = seq(min(avg_happiness_per_year$Year), max(avg_happiness_per_year$Year), by = 1))
+```
+
+# AVG Suicide Rates over years
+## Calculation 
+```{r}
+avg_Suicide_Rate_per_year <- data %>% 
+  group_by (`Year`) %>% 
+  summarise(avg_Suicide_Rate = mean(`Suicide_Rate`, na.rm = T))
+
+avg_Suicide_Rate_per_year
+```
+## Plot 
+
+```{r}
+ggplot(avg_Suicide_Rate_per_year, aes(x = Year, y = avg_Suicide_Rate)) +
+  geom_point(color = "blue") +  
+  labs(title = "Average Happiness Over Time",
+       x = "Year",
+       y = "Happiness") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_Suicide_Rate_per_year$Year), max(avg_Suicide_Rate_per_year$Year), by = 1))
+
+
+
 ```
 
 
+
+
 ```{r}
-avg_happiness_per_year <- data %>% 
+avg_gdp_per_country <- data %>% 
   group_by (`Country_name`) %>% 
   summarise(avg_gpd = mean(`GDP`))
 
