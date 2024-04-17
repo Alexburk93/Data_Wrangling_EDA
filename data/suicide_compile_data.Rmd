@@ -16,6 +16,8 @@ library(dplyr)
 library(readr)
 library(tidyverse)
 library(ggplot2)
+library(highcharter)
+library(magrittr)
 ```
 
 
@@ -42,7 +44,117 @@ data <- data %>%
 data <- select(data, -Variable, -ISIC4...17, -ISIC4...18, -VAR, -MEA, -`Unit Code`)  
 data
 ```
-Open space for mark
+```{r}
+head(data)
+```
+
+```{r}
+# change names
+names(data) <- make.names(names(data))
+```
+
+```{r}
+# dimensions of the dataframe
+nrow(data)
+ncol(data)
+dim(data)
+```
+
+```{r}
+# check the structure of the object
+str(data)
+```
+```{r}
+# look at columns 6, 7 and 10
+head(data[ , c(2, 4:6, 12, 15)])
+```
+
+```{r}
+# look at columns 6, 7 and 10
+tail(data[ , c(1, 3, 9)])
+```
+
+```{r}
+table(data$Year)
+```
+
+
+```{r}
+data %>% 
+  select(Country_name) %>% 
+  unique() %>% 
+  nrow()
+```
+
+```{r}
+unique(data$Country_name)
+```
+
+```{r}
+unique(data$Year)
+```
+
+
+```{r}
+# Set highcharter options for tooltip decimals
+options(highcharter.tooltip.valueDecimals = 2)
+
+# Create highcharter map visualization
+hc <- highchart() %>%
+  hc_add_series_map(
+    worldgeojson, data, value = "GDP", 
+    joinBy = c('name', 'Country_name'),
+    name = "GDP (current US$)"
+  )  %>% 
+  hc_colorAxis(stops = color_stops()) %>% 
+  hc_title(text = "World Map") %>% 
+  hc_subtitle(text = "GDP in current US$")
+
+hc
+```
+
+```{r}
+# Set highcharter options for tooltip decimals
+options(highcharter.tooltip.valueDecimals = 2)
+
+# Create map visualizations for each variable
+hc_life_expectancy <- highchart() %>%
+  hc_add_series_map(
+    worldgeojson, data, 
+    value = "Life_expectancy", 
+    joinBy = c('name', 'Country_name'),
+    name = "Life Expectancy"
+  ) %>%
+  hc_colorAxis(stops = color_stops()) %>%
+  hc_title(text = "World Map") %>%
+  hc_subtitle(text = "Life Expectancy")
+
+hc_suicide_rates <- highchart() %>%
+  hc_add_series_map(
+    worldgeojson, data, 
+    value = "Suicide_Rate", 
+    joinBy = c('name', 'Country_name'),
+    name = "Suicide Rates"
+  ) %>%
+  hc_colorAxis(stops = color_stops()) %>%
+  hc_title(text = "World Map") %>%
+  hc_subtitle(text = "Suicide Rate")
+
+hc_corruption <- highchart() %>%
+  hc_add_series_map(
+    worldgeojson, data, 
+    value = "Corruption", 
+    joinBy = c('name', 'Country_name'),
+    name = "Corruption"
+  ) %>%
+  hc_colorAxis(stops = color_stops()) %>%
+  hc_title(text = "World Map") %>%
+  hc_subtitle(text = "Corruption")
+
+# Display the map visualizations
+list(hc_life_expectancy, hc_suicide_rates, hc_corruption)
+
+```
 
 # AVG GDP over years
 ## Calculation 
@@ -57,7 +169,7 @@ avg_gdp_per_year
 ```{r}
 ggplot(avg_gdp_per_year, aes(x = Year, y = avg_gpd)) +
   geom_line(color = "blue") +  
-  labs(title = "Average GDP Over Time",
+  labs(title = "Average GDP Over Time worldwide",
        x = "Year",
        y = "GDP") +
   theme_minimal() +
@@ -78,7 +190,7 @@ avg_happiness_per_year
 ```{r}
 ggplot(avg_happiness_per_year, aes(x = Year, y = avg_happinnes)) +
   geom_line(color = "blue") +  
-  labs(title = "Average Happiness Over Time",
+  labs(title = "Average Happiness Over Time worldwide",
        x = "Year",
        y = "Happiness") +
   theme_minimal() +
@@ -100,9 +212,9 @@ avg_Suicide_Rate_per_year
 ```{r}
 ggplot(avg_Suicide_Rate_per_year, aes(x = Year, y = avg_Suicide_Rate)) +
   geom_line(color = "blue") +  
-  labs(title = "Average Suicide Rate Over Time",
+  labs(title = "Average Suicide Rate Over Time worldwide",
        x = "Year",
-       y = "Happiness") +
+       y = "Suicide Rate") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_continuous(breaks = seq(min(avg_Suicide_Rate_per_year$Year), max(avg_Suicide_Rate_per_year$Year), by = 1))
@@ -121,9 +233,9 @@ avg_Bankruptcies_per_year
 ```{r}
 ggplot(avg_Bankruptcies_per_year, aes(x = Year, y = avg_Bankruptcies)) +
   geom_line(color = "blue") +  
-  labs(title = "Average Bankruptcies Over Time",
+  labs(title = "Average Bankruptcies Over Time worldwide",
        x = "Year",
-       y = "Happiness") +
+       y = "Bankruptcies") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_continuous(breaks = seq(min(avg_Bankruptcies_per_year$Year), max(avg_Bankruptcies_per_year$Year), by = 1))
@@ -187,9 +299,9 @@ ggplot() +
   # Adding the line plot for Average Happiness
   geom_line(data = avg_Suicide_Rate_per_year, aes(x = Year, y = avg_Suicide_Rate * ratio), color = "red", size = 1.5) +
   # Enhancing the plot
-  labs(title = "Average Happinness and Suicide Rate Over Time",
+  labs(title = "Average Bankruptcies and Suicide Rate Over Time",
        x = "Year",
-       y = "Average Happinness") +
+       y = "Average Bankruptcies") +
   scale_y_continuous(sec.axis = sec_axis(~ . / ratio, name = "Average Suicide Rate")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -202,53 +314,227 @@ ggplot() +
 
 ## Two Happiest and Two unhappiest countries vs suicide rate
 ```{r}
-avg_Suicide_Rate_per_year = avg_Suicide_Rate_per_year %>% 
-  arrange('avg_Suicide_Rate')
+avg_Suicide_Rate_per_country = data %>%
+  group_by(Country_name) %>%
+  summarise(avg_suicide_rate = mean(Suicide_Rate, na.rm = TRUE)) %>%
+  arrange(avg_suicide_rate) %>% 
+  mutate(Row_Number = row_number())
+
+avg_Suicide_Rate_per_country
+
+avg_happiness_per_country <- data %>%
+  group_by(Country_name) %>%
+  summarise(avg_happiness = mean(Life_ladder, na.rm = TRUE)) %>%
+  arrange(desc(avg_happiness))
+
+least_happy =  tail(avg_happiness_per_country, 2)
+most_happy = head(avg_happiness_per_country, 2)
 
 
+avg_Suicide_Rate_per_country %>% 
+  filter(Country_name %in% least_happy$Country_name)
 
-avg_happiness_per_country <- data %>% 
-  group_by (`Country_name`) %>% 
-  summarise(avg_happinnes = mean('Life_Ladder', na.rm = T)) %>% 
-  arrange(desc(avg_happinnes))
+# Interpretation: Japan and South Africa are two very unhappy countries. And they also have a high suicide rate
 
-avg_happiness_per_country
+avg_Suicide_Rate_per_country %>% 
+  filter(Country_name %in% most_happy$Country_name)
 
-avg_gdp_per_country
-avg_happiness_per_year =avg_happiness_per_year %>% 
-  arrange(desc(`avg_happinnes`))
+# Interpretation: Finland is a the second most happy country. But is still on place 16/19 when it comes to suicides
 
-avg_Suicide_Rate_per_year
-avg_happiness_per_year
 ```
 
 ## Two most wealthy countries and two most poor countries vs suicide rate
 ```{r}
-avg_Suicide_Rate_per_year
-
-
 avg_gdp_per_country <- data %>% 
   group_by (`Country_name`) %>% 
   summarise(avg_gpd = mean(`GDP`)) %>% 
   arrange(desc(avg_gpd))
 
-avg_gdp_per_country
+least_gdp =  tail(avg_gdp_per_country, 2)
+most_gdp = head(avg_gdp_per_country, 2)
+
+avg_Suicide_Rate_per_country %>% 
+  filter(Country_name %in% least_money$Country_name)
+
+# Interpretation: New Zealand and Iceland are two very small countries.  
+
+avg_Suicide_Rate_per_country %>% 
+  filter(Country_name %in% most_money$Country_name)
+
+# Interpretation: The two biggest economies are based on the lower end of suicide rates
 ```
 
 
 ## Two most bankcuptcies and two least bankcuptcies countries vs suicide rate
 ```{r}
-avg_Suicide_Rate_per_year
-avg_Bankruptcies_per_year
-avg_gdp_per_year
-```
 
-
-```{r}
-avg_gdp_per_country <- data %>% 
+avg_Bankruptcies_per_year <- data %>% 
   group_by (`Country_name`) %>% 
-  summarise(avg_gpd = mean(`GDP`))
+  summarise(avg_bankruptcies = mean(`Value`, na.rm = T)) %>% 
+  arrange(desc(avg_bankruptcies))
 
-avg_gdp_per_country
+least_bank =  tail(avg_Bankruptcies_per_year, 2)
+most_bank = head(avg_Bankruptcies_per_year, 2)
+
+avg_Suicide_Rate_per_country %>% 
+  filter(Country_name %in% least_bank$Country_name)
+
+# Interpretation: Bankruptcies don't have an influence on suicide rates
+
+avg_Suicide_Rate_per_country %>% 
+  filter(Country_name %in% most_bank$Country_name)
+
+# Interpretation: Bankruptcies don't have an influence on suicide rates
+```
+# In depth analysis Germany
+## Data preperation for Germany
+```{r}
+# Prepare data for only Germany
+germany_data = data %>% 
+  filter(Country_name == "Germany")
 ```
 
+## Plot GDP Germany
+```{r}
+# Plot Germany GDP over Years
+avg_gdp_year_germany = germany_data %>% 
+  group_by(Year) %>% 
+  summarise(avg_gdp = mean(GDP)) 
+
+
+ggplot(avg_gdp_year_germany, aes(x = Year, y = avg_gdp)) +
+  geom_line(color = "blue") +  
+  labs(title = "Average GPD Over Time - Germany",
+       x = "Year",
+       y = "GDP") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_gdp_year_germany$Year), max(avg_gdp_year_germany$Year), by = 1))
+
+```
+
+## Plot Suicide Rate Germany
+```{r}
+avg_suicide_year_germany = germany_data %>% 
+  group_by(Year) %>% 
+  summarise(avg_suicide = mean(Suicide_Rate)) 
+
+
+ggplot(avg_suicide_year_germany, aes(x = Year, y = avg_suicide)) +
+  geom_line(color = "blue") +  
+  labs(title = "Average Suicide Rate Over Time - Germany",
+       x = "Year",
+       y = "Suicide Rate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_suicide_year_germany$Year), max(avg_suicide_year_germany$Year), by = 1))
+```
+## Plot Bankruptcies Rate Germany
+```{r}
+avg_bank_year_germany = germany_data %>% 
+  group_by(Year) %>% 
+  summarise(avg_bank = mean(Value)) 
+
+
+ggplot(avg_bank_year_germany, aes(x = Year, y = avg_bank)) +
+  geom_line(color = "blue") +  
+  labs(title = "Average bankruptcies Over Time - Germany",
+       x = "Year",
+       y = "Bankruptcies") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_bank_year_germany$Year), max(avg_bank_year_germany$Year), by = 1))
+```
+## Plot Happiness Rate Germany
+```{r}
+avg_happiness_year_germany = germany_data %>% 
+  group_by(Year) %>% 
+  summarise(avg_happy = mean(Life_ladder)) 
+
+
+ggplot(avg_happiness_year_germany, aes(x = Year, y = avg_happy)) +
+  geom_line(color = "blue") +  
+  labs(title = "Average Happiness Over Time - Germany",
+       x = "Year",
+       y = "Happiness") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_happiness_year_germany$Year), max(avg_happiness_year_germany$Year), by = 1))
+```
+# In depth analysis South Africa
+## Data preperation for South Africa
+```{r}
+# Prepare data for only Germany
+SA_data = data %>% 
+  filter(Country_name == "South Africa")
+```
+
+## Plot GDP SA
+```{r}
+# Plot Germany GDP over Years
+avg_gdp_year_SA = SA_data %>% 
+  group_by(Year) %>% 
+  summarise(avg_gdp = mean(GDP)) 
+
+
+
+ggplot(avg_gdp_year_SA, aes(x = Year, y = avg_gdp)) +
+  geom_line(color = "blue") +  
+  labs(title = "Average GPD Over Time - SA",
+       x = "Year",
+       y = "GDP") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_gdp_year_SA$Year), max(avg_gdp_year_SA$Year), by = 1))
+
+```
+## Plot Suicide Rate SA
+```{r}
+avg_suicide_year_SA = SA_data %>% 
+  group_by(Year) %>% 
+  summarise(avg_suicide = mean(Suicide_Rate)) 
+
+
+ggplot(avg_suicide_year_SA, aes(x = Year, y = avg_suicide)) +
+  geom_line(color = "blue") +  
+  labs(title = "Average Suicide Rate Over Time - SA",
+       x = "Year",
+       y = "Suicide Rate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_suicide_year_SA$Year), max(avg_suicide_year_SA$Year), by = 1))
+```
+
+## Plot Happiness Rate SA
+```{r}
+avg_happiness_year_SA = SA_data %>% 
+  group_by(Year) %>% 
+  summarise(avg_happy = mean(Life_ladder)) 
+
+
+ggplot(avg_happiness_year_SA, aes(x = Year, y = avg_happy)) +
+  geom_line(color = "blue") +  
+  labs(title = "Average Happiness Over Time - SA",
+       x = "Year",
+       y = "Happiness") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_happiness_year_SA$Year), max(avg_happiness_year_SA$Year), by = 1))
+```
+
+## Plot Bankruptcies Rate SA
+```{r}
+avg_bank_year_SA = SA_data %>% 
+  group_by(Year) %>% 
+  summarise(avg_bank = mean(Value)) 
+
+
+ggplot(avg_bank_year_SA, aes(x = Year, y = avg_bank)) +
+  geom_line(color = "blue") +  
+  labs(title = "Average bankruptcies Over Time - SA",
+       x = "Year",
+       y = "Bankruptcies") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(breaks = seq(min(avg_bank_year_SA$Year), max(avg_bank_year_SA$Year), by = 1))
+```
