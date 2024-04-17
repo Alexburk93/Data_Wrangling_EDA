@@ -1,0 +1,64 @@
+---
+title: "eda_project"
+author: "Marckenrold Cadet"
+date: "`r Sys.Date()`"
+output: 
+   html_notebook:
+       toc: true 
+       toc_float: true
+       toc_depth: 2
+       theme: united
+       highlight: tango
+---
+
+```{r}
+library(dplyr)
+library(readr)
+library(tidyverse)
+library(ggplot2)
+```
+
+
+```{r}
+data <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/suicide_analysis.csv")
+                data %>% sample_n(19)
+```
+Renaming variables and drop unwanted columns
+```{r}
+# renaming the columns 
+data <- data %>%
+  rename(`Country_name` = `Country name`,
+         `Sexes` = `Age-standardized suicide rate - Sex: both sexes`,
+         `Life_ladder` = `Life Ladder`,
+         `Social_support` = `Social support`,
+         `Life_expectancy` = `Healthy life expectancy at birth`,
+         `Freedom_choices` = `Freedom to make life choices`,
+         `Corruption` = `Perceptions of corruption`,
+         `Indicator_name` = `Indicator Name`,
+         `Indicator_code` = `Indicator Code`)
+
+# drop columns 
+# remove the original 'Time' column
+data <- select(data, -Variable, -ISIC4...17, -ISIC4...18, -VAR, -MEA, -`Unit Code`)  
+data
+```
+
+Generate a line chart of GDP overtime
+```{r}
+us_data <- data %>% 
+  filter(Country_name == "United States")
+
+ggplot(us_data, aes(x = Year, y = GDP)) +
+  geom_line(color = "blue") +  
+  labs(title = "GDP Over Time for the United States",
+       x = "Year",
+       y = "GDP") +
+  theme_minimal()
+```
+
+
+
+```{r}
+
+```
+
