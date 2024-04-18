@@ -1,6 +1,6 @@
 ---
-title: "eda_project"
-author: "Marckenrold Cadet"
+title: "Presentation - Don't commit Suicide"
+author: "Marckenrold Cadet & Alexander Burkhart"
 date: "`r Sys.Date()`"
 output: 
    html_notebook:
@@ -19,13 +19,13 @@ library(ggplot2)
 library(highcharter)
 library(magrittr)
 ```
-
-
+# EDA
+## Data loading
 ```{r}
 data <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/suicide_analysis.csv")
                 data %>% sample_n(19)
 ```
-Renaming variables and drop unwanted columns
+## Renaming variables and drop unwanted columns
 ```{r}
 # renaming the columns 
 data <- data %>%
@@ -44,6 +44,7 @@ data <- data %>%
 data <- select(data, -Variable, -ISIC4...17, -ISIC4...18, -VAR, -MEA, -`Unit Code`)  
 data
 ```
+## Data exploration
 ```{r}
 head(data)
 ```
@@ -94,7 +95,7 @@ unique(data$Country_name)
 unique(data$Year)
 ```
 
-
+## Interactive maps
 ```{r}
 # Set highcharter options for tooltip decimals
 options(highcharter.tooltip.valueDecimals = 2)
@@ -312,7 +313,7 @@ ggplot() +
 
 # Comparisions
 
-## Two Happiest and Two unhappiest countries vs suicide rate
+## Two Happiest and Two unhappiest countries vs average suicide rate
 ```{r}
 avg_Suicide_Rate_per_country = data %>%
   group_by(Country_name) %>%
@@ -343,7 +344,7 @@ avg_Suicide_Rate_per_country %>%
 
 ```
 
-## Two most wealthy countries and two most poor countries vs suicide rate
+## Two most wealthy countries and two most poor countries vs average suicide rate
 ```{r}
 avg_gdp_per_country <- data %>% 
   group_by (`Country_name`) %>% 
@@ -354,18 +355,18 @@ least_gdp =  tail(avg_gdp_per_country, 2)
 most_gdp = head(avg_gdp_per_country, 2)
 
 avg_Suicide_Rate_per_country %>% 
-  filter(Country_name %in% least_money$Country_name)
+  filter(Country_name %in% least_gdp$Country_name)
 
 # Interpretation: New Zealand and Iceland are two very small countries.  
 
 avg_Suicide_Rate_per_country %>% 
-  filter(Country_name %in% most_money$Country_name)
+  filter(Country_name %in% most_gdp$Country_name)
 
 # Interpretation: The two biggest economies are based on the lower end of suicide rates
 ```
 
 
-## Two most bankcuptcies and two least bankcuptcies countries vs suicide rate
+## Two most bankcuptcies and two least bankcuptcies countries vs average suicide rate
 ```{r}
 
 avg_Bankruptcies_per_year <- data %>% 
