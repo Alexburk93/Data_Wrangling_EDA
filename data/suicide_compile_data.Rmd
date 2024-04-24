@@ -35,15 +35,24 @@ data <- data %>%
          `Social_support` = `Social support`,
          `Life_expectancy` = `Healthy life expectancy at birth`,
          `Freedom_choices` = `Freedom to make life choices`,
-         `Corruption` = `Perceptions of corruption`,
-         `Indicator_name` = `Indicator Name`,
-         `Indicator_code` = `Indicator Code`)
+         `Corruption` = `Perceptions of corruption`)
+```
 
-# drop columns 
-# remove the original 'Time' column
-data <- select(data, -Variable, -ISIC4...17, -ISIC4...18, -VAR, -MEA, -`Unit Code`)  
+```{r}
 data
 ```
+```{r}
+data
+```
+
+
+```{r}
+# drop columns 
+# remove the original 'Time' column
+data <- select(data, -Variable, -VAR, -MEA, -`Unit Code`)  
+data
+```
+
 ## Data exploration
 ```{r}
 head(data)

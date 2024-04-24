@@ -421,8 +421,8 @@ bankruptcy_data
 
 ```{r}
 # Change column name from `Entity` to `country name`
-gdp_data <- rename(gdp, `Country Name` = `Country Name`)
-bankruptcy_data<- rename(bankruptcy_data, `Country Name` = `Country`)
+gdp_data <- rename(gdp, `Country name` = `Country Name`)
+bankruptcy_data<- rename(bankruptcy_data, `Country name` = `Country`)
 happiness_data = rename(happiness_data, `Year` = `year`)
 suicide_data %>% 
   sample_n(10)
@@ -439,7 +439,10 @@ bankruptcy_data %>%
 ### Merging datasets
 
 ```{r}
+gdp_data
 happiness_data
+bankruptcy_data
+suicide_data
 ```
 
 ```{r}
@@ -455,16 +458,18 @@ suicide_analysis <- suicide_data %>%
   left_join(gdp_data, by = c("Year", "Country name")) %>%
   left_join(bankruptcy_data, by = c("Year", "Country name"))
 
-# View sample data from the merged dataset
-suicide_analysis %>% 
-  sample_n(10)
 ```
+```{r}
+# View sample data from the merged dataset
+suicide_analysis 
+```
+
 Save the dataset in excel csv format to run analysis for the final project
 ```{r}
 
 # Drop specified columns
 suicide_analysis <- suicide_analysis %>%
-  select(-c("Country Code", "COU", "PowerCode", "PowerCode Code"))
+  select(-c("Code", "COU", "PowerCode", "PowerCode Code"))
 
 # Save the merged dataset as a CSV file
 # Define the path to the folder on your desktop
