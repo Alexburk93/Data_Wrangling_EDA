@@ -109,7 +109,7 @@ cat("Date range from: ", start_year, " to ", end_year, "\n")
 ### Exploring GDP dataset & analyze foundings
 ```{r}
 # Load dataset 
-my_data <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/raw_data/GDP_Data/GDP_capita_1960_2022_1.csv")
+my_data <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/raw_data/GDP_Data/GDP_capita_1960_2022.csv")
 my_data
 ```
 
@@ -117,13 +117,14 @@ The Years are in the header, using `pivot_longer()` to convert into two column Y
 ```{r}
 # Pivot the data from wide to long format
 joy <- pivot_longer(my_data, 
-                         cols = -c(`Country Name`, `Country Code`, `Indicator Name`, `Indicator Code`),
+                         cols = -c(`Country Name`),
                          names_to = "Year", 
                          values_to = "GDP")
 
 # Show the first few rows
-head(joy)
+
 ```
+
 
 Perfom `summary stastics`, check for `NA's`, dimension `dim()`, etc. 
 ```{r}
@@ -410,12 +411,19 @@ bankruptcy_data %>%
   sample_n(10)
 ```
 
+
 ### Label headers to align all the data set & view sample data
 ```{r}
-# Change column name from `Entity` to `country name`
-gdp_data <- rename(gdp, `Country Name` = `Country name`)
-bankruptcy_data<- rename(bankruptcy_data, `Country name` = `Country Name`)
+gdp
+bankruptcy_data
+```
 
+
+```{r}
+# Change column name from `Entity` to `country name`
+gdp_data <- rename(gdp, `Country Name` = `Country Name`)
+bankruptcy_data<- rename(bankruptcy_data, `Country Name` = `Country`)
+happiness_data = rename(happiness_data, `Year` = `year`)
 suicide_data %>% 
   sample_n(10)
 
@@ -429,6 +437,11 @@ bankruptcy_data %>%
   sample_n(10)
 ```
 ### Merging datasets
+
+```{r}
+happiness_data
+```
+
 ```{r}
 # Convert "Year" column to character type in all datasets
 suicide_data <- mutate(suicide_data, Year = as.character(Year))
@@ -455,13 +468,13 @@ suicide_analysis <- suicide_analysis %>%
 
 # Save the merged dataset as a CSV file
 # Define the path to the folder on your desktop
-desktop_path <- "/Users/netflixdon/Desktop/Classwork2024/DataWrangling/Data_Wrangling_EDA/data"
+desktop_path <- "/home/alex/Uni/Master_US/2_Semester/Class_Data_Wrangeling_EDA/Data_Wrangling_EDA/data/"
 
 # Create the folder if it doesn't exist
 dir.create(desktop_path, showWarnings = FALSE)
 
 # Save the merged dataset as a CSV file in the specified folder
-write.csv(suicide_analysis, file.path(desktop_path, "suicide_analysis.csv"), row.names = FALSE)
+write.csv(suicide_analysis, file.path(desktop_path, "suicide_analysis_2.csv"), row.names = FALSE)
 ```
 
 

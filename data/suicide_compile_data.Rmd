@@ -22,7 +22,7 @@ library(magrittr)
 # EDA
 ## Data loading
 ```{r}
-data <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/suicide_analysis.csv")
+data <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/suicide_analysis_2.csv")
                 data %>% sample_n(19)
 ```
 ## Renaming variables and drop unwanted columns
