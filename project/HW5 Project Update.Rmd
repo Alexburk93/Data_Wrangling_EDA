@@ -109,7 +109,7 @@ cat("Date range from: ", start_year, " to ", end_year, "\n")
 ### Exploring GDP dataset & analyze foundings
 ```{r}
 # Load dataset 
-my_data <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/raw_data/GDP_Data/GPD_1960_2022.csv")
+my_data <- read_csv("https://raw.githubusercontent.com/Alexburk93/Data_Wrangling_EDA/main/data/raw_data/GDP_Data/GDP_capita_1960_2022_1.csv")
 my_data
 ```
 
