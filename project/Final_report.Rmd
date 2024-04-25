@@ -806,6 +806,32 @@ ggplot() +
                                   max(c(avg_happiness_per_year$Year, avg_Suicide_Rate_per_year$Year)), by = 1))
 
 ```
+```{r}
+# Finding the ratio for scaling the second axis
+ratio <- max(avg_happiness_per_year$avg_happinnes) / max(avg_Suicide_Rate_per_year$avg_Suicide_Rate)
+
+# Creating the base plot
+ggplot() +
+  # Adding the line plot for Average Happiness
+  geom_line(data = avg_happiness_per_year, aes(x = Year, y = avg_happinnes), size = 0.5) +
+  # Adding the line plot for Suicide Rate adjusted by the ratio
+  geom_line(data = avg_Suicide_Rate_per_year, aes(x = Year, y = avg_Suicide_Rate * ratio), color = "red", size = 0.5) +
+  # Setting up the titles and labels
+  labs(title = "Average Happiness and Suicide Rate Over Time",
+       x = "Year",
+       y = "Average Happiness",
+       subtitle = "Suicide rates are scaled to compare against happiness") +
+  # Primary axis for Happiness, secondary axis for Suicide Rate (inversed scaling)
+  scale_y_continuous(name = "Average Happiness",
+                     sec.axis = sec_axis(~ . / ratio, name = "Average Suicide Rate")) +
+  # Minimalist theme with angled x-axis texts
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  # Set x-axis breaks
+  scale_x_continuous(breaks = seq(min(c(avg_happiness_per_year$Year, avg_Suicide_Rate_per_year$Year)), 
+                                  max(c(avg_happiness_per_year$Year, avg_Suicide_Rate_per_year$Year)), by = 1))
+
+```
 
 ## Plot Average Bankruptcies and Average Suicide Rate over years
 ```{r}
@@ -876,18 +902,17 @@ most_gdp = head(avg_gdp_per_country, 2)
 avg_Suicide_Rate_per_country %>% 
   filter(Country_name %in% least_gdp$Country_name)
 
-# Interpretation: New Zealand and Iceland are two very small countries.  
+# Interpretation: Brazil with a low GPD per Capita is still low in the suicide ranking. SA has a bad GPA per Capita and is also bad in the suicide ranking  
 
 avg_Suicide_Rate_per_country %>% 
   filter(Country_name %in% most_gdp$Country_name)
 
-# Interpretation: The two biggest economies are based on the lower end of suicide rates
+# Interpretation: The two biggest economies are based in the middle of the suicide rating
 ```
 
 
 ## Two most bankcuptcies and two least bankcuptcies countries vs average suicide rate
 ```{r}
-
 avg_Bankruptcies_per_year <- data %>% 
   group_by (`Country_name`) %>% 
   summarise(avg_bankruptcies = mean(`Value`, na.rm = T)) %>% 
@@ -981,6 +1006,7 @@ ggplot(avg_happiness_year_germany, aes(x = Year, y = avg_happy)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_continuous(breaks = seq(min(avg_happiness_year_germany$Year), max(avg_happiness_year_germany$Year), by = 1))
 ```
+
 ### Plot Average GDP and Average Suicide Rate over years - Germany
 ```{r}
 avg_suicide_year_germany$avg_suicide
@@ -1188,7 +1214,7 @@ ggplot() +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_continuous(breaks = seq(min(c(avg_happiness_year_SA$Year, avg_suicide_year_SA$Year)), 
-                                  max(c(avg_happiness_year_SA$Year, avg_suicide_year_SA$Year)), by = 0.5))
+                                  max(c(avg_happiness_year_SA$Year, avg_suicide_year_SA$Year)), by = 1))
 ```
 # Conclusion and Summary
 
